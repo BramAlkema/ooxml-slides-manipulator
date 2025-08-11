@@ -18,12 +18,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/username/ooxml-slides-manipulator.git"
+    "url": "https://github.com/BramAlkema/ooxml-slides-manipulator.git"
   },
   "bugs": {
-    "url": "https://github.com/username/ooxml-slides-manipulator/issues"
+    "url": "https://github.com/BramAlkema/ooxml-slides-manipulator/issues"
   },
-  "homepage": "https://github.com/username/ooxml-slides-manipulator#readme",
+  "homepage": "https://github.com/BramAlkema/ooxml-slides-manipulator#readme",
   "scripts": {
     "test": "echo \"Run tests in Google Apps Script environment\" && exit 1"
   },

@@ -92,7 +92,7 @@ slides.batch(s => {
 
 ```bash
 npm install -g @google/clasp
-git clone https://github.com/username/ooxml-slides-manipulator.git
+git clone https://github.com/BramAlkema/ooxml-slides-manipulator.git
 cd ooxml-slides-manipulator
 clasp create --type standalone
 clasp push
