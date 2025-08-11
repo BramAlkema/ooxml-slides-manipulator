@@ -1,0 +1,36 @@
+{
+  "name": "ooxml-slides-manipulator",
+  "version": "1.0.0",
+  "description": "Advanced PowerPoint/Google Slides manipulation through direct OOXML editing in Google Apps Script",
+  "main": "OOXMLSlides.js",
+  "keywords": [
+    "powerpoint",
+    "google-slides",
+    "ooxml",
+    "presentation",
+    "theme",
+    "colors",
+    "fonts",
+    "google-apps-script",
+    "automation"
+  ],
+  "author": "OOXML Slides Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/ooxml-slides-manipulator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/ooxml-slides-manipulator/issues"
+  },
+  "homepage": "https://github.com/username/ooxml-slides-manipulator#readme",
+  "scripts": {
+    "test": "echo \"Run tests in Google Apps Script environment\" && exit 1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.4.2"
+  }
+}
