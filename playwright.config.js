@@ -1,10 +1,10 @@
-import { defineConfig, devices } from '@playwright/test';
+// @ts-check
+const { defineConfig, devices } = require('@playwright/test');
 
 /**
- * Playwright configuration for testing OOXML Slides library
- * Tests Google Apps Script integration and functionality
+ * Playwright configuration for testing OOXML Slides in Google Slides and PowerPoint environments
  */
-export default defineConfig({
+module.exports = defineConfig({
   testDir: './tests',
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -17,27 +17,19 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
-    ['junit', { outputFile: 'playwright-report/junit.xml' }]
+    ['json', { outputFile: 'test-results.json' }],
+    ['line']
   ],
-  /* Shared settings for all the projects below. */
+  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'https://script.google.com',
-    
-    /* Collect trace when retrying the failed test. */
+    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-    
-    /* Screenshot on failure */
     screenshot: 'only-on-failure',
-    
-    /* Video recording */
     video: 'retain-on-failure',
     
-    /* Timeout for each action */
+    /* Increase timeout for slide operations */
     actionTimeout: 30000,
-    
-    /* Navigation timeout */
-    navigationTimeout: 60000
+    navigationTimeout: 60000,
   },
 
   /* Configure projects for major browsers */
@@ -66,24 +58,22 @@ export default defineConfig({
       name: 'Mobile Safari',
       use: { ...devices['iPhone 12'] },
     },
+
+    /* Test against branded browsers. */
+    {
+      name: 'Microsoft Edge',
+      use: { ...devices['Desktop Edge'], channel: 'msedge' },
+    },
+    {
+      name: 'Google Chrome',
+      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+    },
   ],
 
+  /* Global test timeout */
+  timeout: 120000,
+  
   /* Global setup and teardown */
-  globalSetup: './tests/global-setup.js',
-  globalTeardown: './tests/global-teardown.js',
-
-  /* Timeout settings */
-  timeout: 120000, // 2 minutes per test
-  expect: {
-    timeout: 10000 // 10 seconds for assertions
-  },
-
-  /* Environment variables */
-  use: {
-    ...devices['Desktop Chrome'],
-    // Custom environment variables for testing
-    extraHTTPHeaders: {
-      'User-Agent': 'OOXMLSlides-Test-Agent/1.0'
-    }
-  }
+  globalSetup: require.resolve('./tests/global-setup.js'),
+  globalTeardown: require.resolve('./tests/global-teardown.js'),
 });

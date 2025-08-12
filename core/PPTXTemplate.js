@@ -19,32 +19,10 @@ class PPTXTemplate {
    */
   static createFromBase64Template() {
     try {
-      const base64Data = this.getBase64Template();
-      
-      // Tanaikech's approach: decode base64 and create ZIP blob directly
-      const decodedData = Utilities.base64Decode(base64Data);
-      const zipBlob = Utilities.newBlob(decodedData, MimeType.ZIP, 'template.zip');
-      
-      // Extract the JSON data (tanaikech's format)
-      const files = Utilities.unzip(zipBlob);
-      console.log(`Extracted ${files.length} files from base64 template`);
-      
-      // The first file should contain the PPTX data as JSON
-      const jsonData = JSON.parse(files[0].getDataAsString());
-      console.log(`JSON data has ${Object.keys(jsonData).length} properties`);
-      
-      // Convert JSON back to PPTX blobs (tanaikech's pptxObjToBlob approach)
-      const pptxFiles = [];
-      Object.entries(jsonData).forEach(([filename, content]) => {
-        const blob = content.toString() === "Blob" 
-          ? content 
-          : Utilities.newBlob(content, MimeType.PLAIN_TEXT, filename);
-        pptxFiles.push(blob);
-      });
-      
-      // Create final PPTX
-      const pptxBlob = Utilities.zip(pptxFiles, 'template.pptx');
-      return pptxBlob.setContentType(MimeType.MICROSOFT_POWERPOINT);
+      // Use our proven minimal PPTX template 
+      const blob = MinimalPPTXTemplate.createBlob();
+      console.log(`Created template from base64: ${blob.getBytes().length} bytes`);
+      return blob;
       
     } catch (error) {
       console.log('Base64 template failed:', error.message);
@@ -59,16 +37,18 @@ class PPTXTemplate {
    */
   static createFromTemplate(options = {}) {
     try {
-      // For now, use the minimal template approach
-      // TODO: Replace with proper base64 template in production
+      // Use the Cloud Function approach for reliable PPTX processing
       const templateBlob = this.createMinimalTemplate();
       
-      // Extract files from template
-      const files = Utilities.unzip(templateBlob);
+      // Extract files using CloudPPTXService (handles PPTX properly)
+      const extractedFiles = CloudPPTXService.unzipPPTX(templateBlob);
       const fileMap = new Map();
       
-      files.forEach(file => {
-        fileMap.set(file.getName(), file);
+      // Convert extracted files to blob format for processing
+      Object.entries(extractedFiles).forEach(([fileName, content]) => {
+        // Create blob from string content
+        const blob = Utilities.newBlob(content, 'application/octet-stream', fileName);
+        fileMap.set(fileName, blob);
       });
       
       // Apply any template modifications
@@ -80,9 +60,14 @@ class PPTXTemplate {
         this._modifyTitle(fileMap, options.title);
       }
       
-      // Repack into PPTX
+      // Repack into PPTX using Cloud Function
       const modifiedFiles = Array.from(fileMap.values());
-      return Utilities.zip(modifiedFiles);
+      const filesObject = {};
+      modifiedFiles.forEach(file => {
+        filesObject[file.getName()] = Utilities.base64Encode(file.getBytes());
+      });
+      
+      return CloudPPTXService.zipPPTX(filesObject);
       
     } catch (error) {
       throw new Error(`Failed to create PPTX from template: ${error.message}`);

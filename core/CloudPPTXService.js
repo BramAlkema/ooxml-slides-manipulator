@@ -10,8 +10,8 @@ class CloudPPTXService {
    * TODO: Replace with actual deployed function URL
    */
   static get CLOUD_FUNCTION_URL() {
-    return 'http://localhost:8080'; // For local testing
-    // return 'https://your-region-your-project.cloudfunctions.net/pptx-router'; // For production
+    return 'https://pptx-router-149429464972.us-central1.run.app'; // Production
+    // return 'http://localhost:8080'; // For local testing
   }
   
   /**
@@ -82,4 +82,125 @@ class CloudPPTXService {
       
       // Convert base64 result back to blob
       const pptxData = Utilities.base64Decode(result.pptxData);
-      const pptxBlob = Utilities.newBlob(pptxData, MimeType.MICROSOFT_POWERPOINT, 'presentation.pptx');\n      \n      console.log(`✅ Successfully zipped ${result.fileCount} files into PPTX: ${result.size} bytes`);\n      \n      return pptxBlob;\n      \n    } catch (error) {\n      console.error('Failed to zip PPTX via Cloud Function:', error);\n      throw new Error(`Cloud zip error: ${error.message}`);\n    }\n  }\n  \n  /**\n   * Test the Cloud Function connectivity\n   * @returns {boolean} True if Cloud Function is accessible\n   */\n  static testCloudFunction() {\n    try {\n      console.log('Testing Cloud Function connectivity...');\n      \n      // Simple round-trip test\n      const testFiles = {\n        'test.txt': 'Hello from Google Apps Script!'\n      };\n      \n      const pptxBlob = this.zipPPTX(testFiles);\n      const extractedFiles = this.unzipPPTX(pptxBlob);\n      \n      const success = extractedFiles['test.txt'] === testFiles['test.txt'];\n      \n      if (success) {\n        console.log('✅ Cloud Function connectivity test passed!');\n      } else {\n        console.log('❌ Cloud Function connectivity test failed: content mismatch');\n      }\n      \n      return success;\n      \n    } catch (error) {\n      console.error('❌ Cloud Function connectivity test failed:', error);\n      return false;\n    }\n  }\n  \n  /**\n   * Check if we can use Cloud Function (fallback detection)\n   * @returns {boolean} True if Cloud Function is available\n   */\n  static isCloudFunctionAvailable() {\n    try {\n      // Try a simple request with short timeout\n      const response = UrlFetchApp.fetch(`${this.CLOUD_FUNCTION_URL}/zip`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        payload: JSON.stringify({ files: { 'test.txt': 'test' } }),\n        muteHttpExceptions: true\n      });\n      \n      return response.getResponseCode() === 200;\n      \n    } catch (error) {\n      console.log('Cloud Function not available:', error.message);\n      return false;\n    }\n  }\n  \n  /**\n   * Enhanced PPTX manipulation that uses Cloud Function when available\n   * Falls back to Google Apps Script native methods when Cloud Function is unavailable\n   * @param {Blob} pptxBlob - Original PPTX blob\n   * @param {Function} manipulator - Function that takes files object and returns modified files\n   * @returns {Blob} Modified PPTX blob\n   */\n  static manipulatePPTX(pptxBlob, manipulator) {\n    try {\n      if (this.isCloudFunctionAvailable()) {\n        console.log('Using Cloud Function for PPTX manipulation...');\n        \n        // Extract files using Cloud Function\n        const files = this.unzipPPTX(pptxBlob);\n        \n        // Apply manipulations\n        const modifiedFiles = manipulator(files);\n        \n        // Repackage using Cloud Function\n        return this.zipPPTX(modifiedFiles);\n        \n      } else {\n        console.log('Cloud Function unavailable, falling back to Google Apps Script...');\n        \n        // Try Google Apps Script native unzip (will fail for most PPTX files)\n        try {\n          const files = Utilities.unzip(pptxBlob);\n          const fileMap = {};\n          \n          files.forEach(file => {\n            fileMap[file.getName()] = file.getDataAsString();\n          });\n          \n          const modifiedFiles = manipulator(fileMap);\n          \n          // Convert back to blobs\n          const blobs = [];\n          Object.entries(modifiedFiles).forEach(([filename, content]) => {\n            blobs.push(Utilities.newBlob(content, 'text/plain', filename));\n          });\n          \n          return Utilities.zip(blobs);\n          \n        } catch (nativeError) {\n          throw new Error(\n            `PPTX manipulation failed: Cloud Function unavailable and Google Apps Script cannot unzip this PPTX. ` +\n            `Deploy the Cloud Function or use a different PPTX file. Native error: ${nativeError.message}`\n          );\n        }\n      }\n      \n    } catch (error) {\n      throw new Error(`PPTX manipulation failed: ${error.message}`);\n    }\n  }\n}
+      const pptxBlob = Utilities.newBlob(pptxData, MimeType.MICROSOFT_POWERPOINT, 'presentation.pptx');
+      
+      console.log(`✅ Successfully zipped ${result.fileCount} files into PPTX: ${result.size} bytes`);
+      
+      return pptxBlob;
+      
+    } catch (error) {
+      console.error('Failed to zip PPTX via Cloud Function:', error);
+      throw new Error(`Cloud zip error: ${error.message}`);
+    }
+  }
+  
+  /**
+   * Test the Cloud Function connectivity
+   * @returns {boolean} True if Cloud Function is accessible
+   */
+  static testCloudFunction() {
+    try {
+      console.log('Testing Cloud Function connectivity...');
+      
+      // Test with actual PPTX data using the unzip endpoint
+      const templateBlob = PPTXTemplate.createMinimalTemplate();
+      const result = this.unzipPPTX(templateBlob);
+      
+      // Check if we got valid PPTX structure back
+      const hasExpectedFiles = result && 
+        typeof result === 'object' &&
+        Object.keys(result).length > 0;
+      
+      if (hasExpectedFiles) {
+        console.log('✅ Cloud Function connectivity test passed!');
+        console.log(`   Extracted ${Object.keys(result).length} files`);
+        return true;
+      } else {
+        console.log('❌ Cloud Function connectivity test failed: invalid response structure');
+        return false;
+      }
+      
+    } catch (error) {
+      console.error('❌ Cloud Function connectivity test failed:', error.message);
+      return false;
+    }
+  }
+  
+  /**
+   * Check if we can use Cloud Function (fallback detection)
+   * @returns {boolean} True if Cloud Function is available
+   */
+  static isCloudFunctionAvailable() {
+    try {
+      // Try a simple GET request to test connectivity
+      const response = UrlFetchApp.fetch(`${this.CLOUD_FUNCTION_URL}/test`, {
+        method: 'GET',
+        muteHttpExceptions: true
+      });
+      
+      // Accept any response that's not a network error (even 404/405 means service is up)
+      const responseCode = response.getResponseCode();
+      return responseCode >= 200 && responseCode < 500;
+      
+    } catch (error) {
+      console.log('Cloud Function not available:', error.message);
+      return false;
+    }
+  }
+  
+  /**
+   * Enhanced PPTX manipulation that uses Cloud Function when available
+   * Falls back to Google Apps Script native methods when Cloud Function is unavailable
+   * @param {Blob} pptxBlob - Original PPTX blob
+   * @param {Function} manipulator - Function that takes files object and returns modified files
+   * @returns {Blob} Modified PPTX blob
+   */
+  static manipulatePPTX(pptxBlob, manipulator) {
+    try {
+      if (this.isCloudFunctionAvailable()) {
+        console.log('Using Cloud Function for PPTX manipulation...');
+        
+        // Extract files using Cloud Function
+        const files = this.unzipPPTX(pptxBlob);
+        
+        // Apply manipulations
+        const modifiedFiles = manipulator(files);
+        
+        // Repackage using Cloud Function
+        return this.zipPPTX(modifiedFiles);
+        
+      } else {
+        console.log('Cloud Function unavailable, falling back to Google Apps Script...');
+        
+        // Try Google Apps Script native unzip (will fail for most PPTX files)
+        try {
+          const files = Utilities.unzip(pptxBlob);
+          const fileMap = {};
+          
+          files.forEach(file => {
+            fileMap[file.getName()] = file.getDataAsString();
+          });
+          
+          const modifiedFiles = manipulator(fileMap);
+          
+          // Convert back to blobs
+          const blobs = [];
+          Object.entries(modifiedFiles).forEach(([filename, content]) => {
+            blobs.push(Utilities.newBlob(content, 'text/plain', filename));
+          });
+          
+          return Utilities.zip(blobs);
+          
+        } catch (nativeError) {
+          throw new Error(
+            `PPTX manipulation failed: Cloud Function unavailable and Google Apps Script cannot unzip this PPTX. ` +
+            `Deploy the Cloud Function or use a different PPTX file. Native error: ${nativeError.message}`
+          );
+        }
+      }
+      
+    } catch (error) {
+      throw new Error(`PPTX manipulation failed: ${error.message}`);
+    }
+  }
+}

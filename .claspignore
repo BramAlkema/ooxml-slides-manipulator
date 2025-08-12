@@ -1,33 +1,11 @@
-# Ignore files that shouldn't be pushed to Google Apps Script
-
-# Node.js and npm
-node_modules/
-package.json
-package-lock.json
-
-# Playwright testing
-playwright.config.js
-playwright-report/
-test-results/
-tests/
-
-# Git and GitHub
-.git/
-.github/
-.gitignore
-
-# Documentation
+cloud-function/**
+DEPLOYMENT.md
 README.md
-LICENSE
-TESTING.md
-GOOGLE_APPS_SCRIPT_SETUP.md
-analysis/
-
-# Environment files
-.env
-.env.example
-
-# Temporary files
-*.log
-*.tmp
-temp/
+*.pptx
+*.zip
+node_modules/**
+.git/**
+.DS_Store
+.github/**
+playwright.config.js
+package*.json

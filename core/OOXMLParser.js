@@ -33,9 +33,37 @@ class OOXMLParser {
       
       // Convert to internal format
       Object.entries(extractedFiles).forEach(([fileName, content]) => {
+        const isXML = fileName.endsWith('.xml') || fileName.endsWith('.rels');
+        let processedContent = content;
+        
+        // Cloud Function returns base64-encoded content, decode for XML files
+        if (isXML && typeof content === 'string') {
+          // Check if content looks like XML already (starts with < or <?xml)
+          if (content.trim().startsWith('<')) {
+            // Already text content, use as is
+            processedContent = content;
+          } else {
+            // Try to decode base64 content
+            try {
+              // Try standard base64 decode first
+              const decoded = Utilities.base64Decode(content);
+              processedContent = Utilities.newBlob(decoded).getDataAsString('UTF-8');
+            } catch (decodeError) {
+              try {
+                // Try base64WebSafe decode as fallback
+                const decoded = Utilities.base64DecodeWebSafe(content);
+                processedContent = Utilities.newBlob(decoded).getDataAsString('UTF-8');
+              } catch (decodeError2) {
+                // If both decode methods fail, assume it's already text content
+                processedContent = content;
+              }
+            }
+          }
+        }
+        
         this.files.set(fileName, {
-          content: content,
-          isXML: fileName.endsWith('.xml') || fileName.endsWith('.rels'),
+          content: processedContent,
+          isXML: isXML,
           blob: null // We have text content, can recreate blob if needed
         });
       });

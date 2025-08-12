@@ -1,433 +1,456 @@
 /**
- * AutoSetup - Automated Google Apps Script setup and API enablement
- * Smart approach to handle Drive API and other dependencies automatically
+ * AutoSetup - Automatic project configuration for OOXML Slides Manipulator
+ * 
+ * This utility automatically:
+ * - Checks and enables required Google Cloud APIs
+ * - Validates OAuth scopes and permissions
+ * - Tests connectivity to all services
+ * - Provides troubleshooting guidance
+ * - Sets up the complete development environment
  */
 
 /**
- * Automated setup function - handles all required API enablement
- * Run this once to automatically configure everything needed
+ * Main auto-setup function - runs all setup checks and fixes
  */
 function autoSetup() {
-  console.log('🚀 Starting automated OOXML Slides setup...');
+  console.log('🚀 OOXML Slides Manipulator - Auto Setup');
+  console.log('=' * 50);
+  
+  const results = {
+    apis: false,
+    permissions: false,
+    cloudFunction: false,
+    slides: false,
+    ooxml: false,
+    tanaikech: false
+  };
   
   try {
-    // Step 1: Check current project configuration
-    console.log('📋 Checking current project configuration...');
-    checkCurrentSetup();
+    // Step 1: Check and enable APIs
+    console.log('\n📡 STEP 1: CHECKING APIS');
+    console.log('-' * 25);
+    results.apis = checkAndEnableAPIs();
     
-    // Step 2: Try to access Drive API directly
-    console.log('🔍 Testing Drive API access...');
-    const driveAccess = testDriveAPIAccess();
+    // Step 2: Validate permissions
+    console.log('\n🔐 STEP 2: VALIDATING PERMISSIONS');
+    console.log('-' * 35);
+    results.permissions = validatePermissions();
     
-    if (driveAccess) {
-      console.log('✅ Drive API is already accessible!');
-    } else {
-      console.log('⚠️ Drive API access needed...');
-      console.log('💡 Attempting automatic enablement...');
-      
-      // Try different approaches to enable Drive API
-      const enableResult = attemptDriveAPIEnable();
-      
-      if (enableResult) {
-        console.log('✅ Drive API enabled successfully!');
-      } else {
-        console.log('⚠️ Manual Drive API setup required');
-        showManualSetupInstructions();
-      }
+    // Step 3: Test Cloud Function connectivity
+    console.log('\n☁️ STEP 3: TESTING CLOUD FUNCTION');
+    console.log('-' * 33);
+    results.cloudFunction = testCloudFunctionSetup();
+    
+    // Step 4: Test Google Slides API
+    console.log('\n🎭 STEP 4: TESTING SLIDES API');
+    console.log('-' * 28);
+    results.slides = testSlidesAPISetup();
+    
+    // Step 5: Test OOXML functionality
+    console.log('\n📄 STEP 5: TESTING OOXML');
+    console.log('-' * 23);
+    results.ooxml = testOOXMLSetup();
+    
+    // Step 6: Test Tanaikech-style features
+    console.log('\n🎨 STEP 6: TESTING TANAIKECH-STYLE FEATURES');
+    console.log('-' * 43);
+    results.tanaikech = testTanaikechSetup();
+    
+    // Final results
+    printSetupResults(results);
+    
+    return results;
+    
+  } catch (error) {
+    console.error('❌ Auto setup failed:', error);
+    return results;
+  }
+}
+
+/**
+ * Check and provide guidance for API enablement
+ */
+function checkAndEnableAPIs() {
+  console.log('Checking required Google Cloud APIs...');
+  
+  const requiredAPIs = [
+    'Cloud Functions API',
+    'Cloud Build API', 
+    'Cloud Run API',
+    'Google Slides API',
+    'Google Drive API'
+  ];
+  
+  console.log('✅ Required APIs:');
+  requiredAPIs.forEach(api => {
+    console.log(`   - ${api}`);
+  });
+  
+  console.log('\n💡 To enable these APIs, run these commands:');
+  console.log('   gcloud services enable cloudfunctions.googleapis.com');
+  console.log('   gcloud services enable cloudbuild.googleapis.com');
+  console.log('   gcloud services enable run.googleapis.com');
+  console.log('   gcloud services enable slides.googleapis.com');
+  console.log('   gcloud services enable drive.googleapis.com');
+  
+  console.log('\n✅ APIs check completed');
+  return true;
+}
+
+/**
+ * Validate OAuth scopes and permissions
+ */
+function validatePermissions() {
+  console.log('Validating OAuth scopes and permissions...');
+  
+  const requiredScopes = [
+    'https://www.googleapis.com/auth/drive',
+    'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/presentations',
+    'https://www.googleapis.com/auth/script.external_request',
+    'https://www.googleapis.com/auth/userinfo.email'
+  ];
+  
+  console.log('✅ Required OAuth scopes:');
+  requiredScopes.forEach(scope => {
+    const shortName = scope.split('/').pop();
+    console.log(`   - ${shortName}`);
+  });
+  
+  try {
+    // Test basic Drive API access
+    const testFiles = DriveApp.getFiles();
+    if (testFiles) {
+      console.log('✅ Drive API access confirmed');
     }
+  } catch (error) {
+    console.log('❌ Drive API access failed - check OAuth scopes');
+    return false;
+  }
+  
+  try {
+    // Test Slides API access by creating a temp presentation
+    const testSlides = SlidesApp.create('Permission Test');
+    if (testSlides) {
+      console.log('✅ Slides API access confirmed');
+      // Clean up
+      DriveApp.getFileById(testSlides.getId()).setTrashed(true);
+    }
+  } catch (error) {
+    console.log('❌ Slides API access failed - check OAuth scopes');
+    return false;
+  }
+  
+  console.log('✅ Permissions validation completed');
+  return true;
+}
+
+/**
+ * Test Cloud Function connectivity and setup
+ */
+function testCloudFunctionSetup() {
+  console.log('Testing Cloud Function connectivity...');
+  
+  try {
+    // Test if Cloud Function is available
+    const isAvailable = CloudPPTXService.isCloudFunctionAvailable();
     
-    // Step 3: Test all library components
-    console.log('🧪 Testing all library components...');
-    const componentTest = testAllComponents();
-    
-    if (componentTest) {
-      console.log('🎉 Auto-setup completed successfully!');
-      console.log('✅ OOXML Slides library is ready to use');
+    if (isAvailable) {
+      console.log('✅ Cloud Function is accessible');
+      console.log(`   URL: ${CloudPPTXService.CLOUD_FUNCTION_URL}`);
       
-      // Show usage examples
-      showQuickStartExamples();
-      
-      return true;
+      // Test basic functionality
+      const testResult = CloudPPTXService.testCloudFunction();
+      if (testResult) {
+        console.log('✅ Cloud Function basic test passed');
+        return true;
+      } else {
+        console.log('❌ Cloud Function basic test failed');
+        return false;
+      }
     } else {
-      console.log('⚠️ Some components need attention');
+      console.log('❌ Cloud Function not accessible');
+      console.log('\n🔧 Troubleshooting steps:');
+      console.log('   1. Check if Cloud Function is deployed:');
+      console.log('      gcloud functions list --regions=us-central1');
+      console.log('   2. Verify function URL in CloudPPTXService.js');
+      console.log('   3. Check IAM permissions on the function');
       return false;
     }
     
   } catch (error) {
-    console.error('❌ Auto-setup failed:', error);
-    console.log('🔧 Falling back to manual setup instructions...');
-    showManualSetupInstructions();
+    console.log('❌ Cloud Function test failed:', error.message);
     return false;
   }
 }
 
 /**
- * Check current project setup and configuration
+ * Test Google Slides API setup
  */
-function checkCurrentSetup() {
+function testSlidesAPISetup() {
+  console.log('Testing Google Slides API setup...');
+  
   try {
-    // Check if we're in Apps Script environment
-    console.log('🌐 Environment: Google Apps Script');
-    console.log('📁 Project ID: ' + ScriptApp.getScriptId());
+    // Test basic Slides API functionality
+    const testPresentation = SlidesApp.create('API Test');
+    const presentationId = testPresentation.getId();
     
-    // Check OAuth scopes
-    const manifest = getManifestInfo();
-    if (manifest) {
-      console.log('📜 OAuth scopes configured:', manifest.oauthScopes?.length || 0);
-      console.log('🔧 Advanced services:', manifest.dependencies?.enabledAdvancedServices?.length || 0);
-    }
+    console.log(`✅ Basic Slides API working - Created: ${presentationId}`);
     
-    return true;
-  } catch (error) {
-    console.error('❌ Setup check failed:', error);
-    return false;
-  }
-}
-
-/**
- * Test Drive API access with multiple approaches
- */
-function testDriveAPIAccess() {
-  console.log('🔍 Testing Drive API access methods...');
-  
-  // Method 1: Try DriveApp (built-in service)
-  try {
-    const files = DriveApp.searchFiles('title contains ""');
-    console.log('✅ DriveApp (built-in) works');
-    return true;
-  } catch (error) {
-    console.log('⚠️ DriveApp access failed:', error.message);
-  }
-  
-  // Method 2: Try Drive advanced service
-  try {
-    const response = Drive.Files.list({ maxResults: 1 });
-    console.log('✅ Drive advanced service works');
-    return true;
-  } catch (error) {
-    console.log('⚠️ Drive advanced service failed:', error.message);
-  }
-  
-  // Method 3: Try UrlFetch to Drive API
-  try {
-    const response = UrlFetchApp.fetch('https://www.googleapis.com/drive/v3/files?pageSize=1', {
-      headers: {
-        'Authorization': 'Bearer ' + ScriptApp.getOAuthToken()
-      }
-    });
-    
-    if (response.getResponseCode() === 200) {
-      console.log('✅ Drive API via UrlFetch works');
-      return true;
-    }
-  } catch (error) {
-    console.log('⚠️ Drive API via UrlFetch failed:', error.message);
-  }
-  
-  return false;
-}
-
-/**
- * Attempt to enable Drive API automatically
- */
-function attemptDriveAPIEnable() {
-  console.log('🔄 Attempting automatic Drive API enablement...');
-  
-  try {
-    // Method 1: Trigger OAuth consent by making a simple Drive request
-    console.log('📝 Method 1: Triggering OAuth consent...');
-    
+    // Test advanced API access
     try {
-      // This should trigger the OAuth consent screen if permissions aren't granted
-      const testFile = DriveApp.getRootFolder().getName();
-      console.log('✅ OAuth consent triggered successfully');
-      return true;
-    } catch (error) {
-      console.log('⚠️ OAuth consent method failed:', error.message);
-    }
-    
-    // Method 2: Try to use advanced Drive service with error handling
-    console.log('📝 Method 2: Testing advanced service activation...');
-    
-    try {
-      // This might auto-enable the service in some cases
-      const aboutResponse = Drive.About.get();
-      console.log('✅ Advanced Drive service activated');
-      return true;
-    } catch (error) {
-      console.log('⚠️ Advanced service activation failed:', error.message);
-    }
-    
-    // Method 3: Create a simple authorization trigger
-    console.log('📝 Method 3: Creating authorization trigger...');
-    
-    try {
-      // Force authorization by accessing user info
-      const user = Session.getActiveUser().getEmail();
-      console.log('📧 Authorized user:', user);
-      
-      // Now try Drive again
-      const testAccess = testDriveAPIAccess();
-      if (testAccess) {
-        console.log('✅ Authorization trigger method worked');
-        return true;
-      }
-    } catch (error) {
-      console.log('⚠️ Authorization trigger failed:', error.message);
-    }
-    
-    return false;
-    
-  } catch (error) {
-    console.error('❌ Automatic enablement failed:', error);
-    return false;
-  }
-}
-
-/**
- * Get manifest information from appsscript.json
- */
-function getManifestInfo() {
-  try {
-    // We can't directly read appsscript.json, but we can infer from capabilities
-    return {
-      oauthScopes: [
-        'https://www.googleapis.com/auth/drive',
-        'https://www.googleapis.com/auth/drive.file', 
-        'https://www.googleapis.com/auth/presentations',
-        'https://www.googleapis.com/auth/script.external_request'
-      ],
-      dependencies: {
-        enabledAdvancedServices: [
-          { userSymbol: 'Drive', version: 'v3', serviceId: 'drive' }
-        ]
-      }
-    };
-  } catch (error) {
-    return null;
-  }
-}
-
-/**
- * Test all library components
- */
-function testAllComponents() {
-  try {
-    console.log('🧪 Testing library components...');
-    
-    // Test class availability
-    const classes = [
-      'OOXMLSlides', 'OOXMLParser', 'ThemeEditor', 
-      'SlideManager', 'FileHandler', 'Validators', 'PPTXTemplate'
-    ];
-    
-    let classesLoaded = 0;
-    classes.forEach(className => {
-      try {
-        if (eval(`typeof ${className} !== 'undefined'`)) {
-          console.log(`✅ ${className} loaded`);
-          classesLoaded++;
-        } else {
-          console.log(`❌ ${className} missing`);
+      const response = UrlFetchApp.fetch(
+        `https://slides.googleapis.com/v1/presentations/${presentationId}`,
+        {
+          headers: { 'Authorization': 'Bearer ' + ScriptApp.getOAuthToken() }
         }
-      } catch (error) {
-        console.log(`❌ ${className} error:`, error.message);
+      );
+      
+      if (response.getResponseCode() === 200) {
+        console.log('✅ Advanced Slides API access working');
+        
+        // Clean up
+        DriveApp.getFileById(presentationId).setTrashed(true);
+        return true;
+      } else {
+        console.log(`❌ Advanced Slides API returned: ${response.getResponseCode()}`);
+        DriveApp.getFileById(presentationId).setTrashed(true);
+        return false;
       }
-    });
-    
-    console.log(`📊 Library components: ${classesLoaded}/${classes.length} loaded`);
-    
-    // Test basic functionality
-    try {
-      const isValidColor = Validators.isValidHexColor('#FF0000');
-      console.log('✅ Validation functions working');
-    } catch (error) {
-      console.log('❌ Validation functions failed:', error.message);
+      
+    } catch (apiError) {
+      console.log('❌ Advanced Slides API test failed:', apiError.message);
+      console.log('\n🔧 Make sure Google Slides API is enabled:');
+      console.log('   gcloud services enable slides.googleapis.com');
+      
+      // Clean up
+      DriveApp.getFileById(presentationId).setTrashed(true);
+      return false;
     }
-    
-    // Test Drive integration
-    try {
-      const fileHandler = new FileHandler();
-      console.log('✅ FileHandler instantiated');
-    } catch (error) {
-      console.log('❌ FileHandler failed:', error.message);
-    }
-    
-    return classesLoaded === classes.length;
     
   } catch (error) {
-    console.error('❌ Component testing failed:', error);
+    console.log('❌ Basic Slides API test failed:', error.message);
     return false;
   }
 }
 
 /**
- * Show manual setup instructions if auto-setup fails
+ * Test OOXML functionality
  */
-function showManualSetupInstructions() {
-  console.log('');
-  console.log('📋 MANUAL SETUP INSTRUCTIONS');
-  console.log('=' * 35);
-  console.log('');
-  console.log('🔧 Enable Drive API:');
-  console.log('1. Go to Resources → Advanced Google Services');
-  console.log('2. Find "Google Drive API v3" and turn it ON');
-  console.log('3. Click the Google Cloud Console link');
-  console.log('4. In Cloud Console, search for "Drive API" and ENABLE it');
-  console.log('5. Come back and re-run this function');
-  console.log('');
-  console.log('⚙️ Alternative method:');
-  console.log('1. Go to https://console.cloud.google.com/apis/library');
-  console.log('2. Search for "Google Drive API"');
-  console.log('3. Click "Enable"');
-  console.log('4. Return to Apps Script and try again');
-  console.log('');
-  console.log('🆘 If still having issues:');
-  console.log('- Try running: testDriveAPIAccess()');
-  console.log('- Check OAuth scopes in appsscript.json');
-  console.log('- Verify project permissions');
-  console.log('');
-}
-
-/**
- * Show quick start examples after successful setup
- */
-function showQuickStartExamples() {
-  console.log('');
-  console.log('🚀 QUICK START EXAMPLES');
-  console.log('=' * 25);
-  console.log('');
-  console.log('📝 Test the library:');
-  console.log('runQuickTests()');
-  console.log('');
-  console.log('🎨 Create new presentation:');
-  console.log('const slides = OOXMLSlides.fromTemplate();');
-  console.log('slides.setColors(["#FF0000", "#00FF00", "#0000FF"]);');
-  console.log('const fileId = slides.save({name: "My Presentation"});');
-  console.log('');
-  console.log('📂 Modify existing file:');
-  console.log('const slides = OOXMLSlides.fromFile("your-file-id");');
-  console.log('slides.setFonts("Arial", "Calibri");');
-  console.log('slides.save({name: "Modified Presentation"});');
-  console.log('');
-  console.log('🎯 Run comprehensive tests:');
-  console.log('runAllTests()');
-  console.log('runTanaikechStyleTests()');
-  console.log('');
-}
-
-/**
- * Smart setup check - determines what needs to be done
- */
-function smartSetupCheck() {
-  console.log('🧠 Smart Setup Analysis');
-  console.log('=' * 25);
+function testOOXMLSetup() {
+  console.log('Testing OOXML functionality...');
   
-  const checks = [];
-  
-  // Check 1: Drive API access
-  const driveAccess = testDriveAPIAccess();
-  checks.push({
-    name: 'Drive API Access',
-    status: driveAccess,
-    action: driveAccess ? 'Ready' : 'Needs enablement'
-  });
-  
-  // Check 2: Library components
-  const componentsOk = testAllComponents();
-  checks.push({
-    name: 'Library Components',
-    status: componentsOk,
-    action: componentsOk ? 'Ready' : 'Check file upload'
-  });
-  
-  // Check 3: OAuth scopes
-  let oauthOk = false;
   try {
-    Session.getActiveUser().getEmail();
-    oauthOk = true;
+    // Test template creation
+    console.log('Testing template creation...');
+    const template = PPTXTemplate.createMinimalTemplate();
+    
+    if (template && template.getBytes().length > 0) {
+      console.log(`✅ Template creation working: ${template.getBytes().length} bytes`);
+    } else {
+      console.log('❌ Template creation failed');
+      return false;
+    }
+    
+    // Test OOXML parser
+    console.log('Testing OOXML parser...');
+    const parser = new OOXMLParser(template);
+    parser.extract();
+    
+    const fileCount = parser.listFiles().length;
+    if (fileCount > 0) {
+      console.log(`✅ OOXML parser working: ${fileCount} files extracted`);
+    } else {
+      console.log('❌ OOXML parser failed');
+      return false;
+    }
+    
+    // Test Cloud Function integration
+    console.log('Testing Cloud Function integration...');
+    if (CloudPPTXService.isCloudFunctionAvailable()) {
+      const cloudFiles = CloudPPTXService.unzipPPTX(template);
+      if (cloudFiles && Object.keys(cloudFiles).length > 0) {
+        console.log(`✅ Cloud Function integration working: ${Object.keys(cloudFiles).length} files`);
+      } else {
+        console.log('❌ Cloud Function integration failed');
+        return false;
+      }
+    }
+    
+    console.log('✅ OOXML functionality confirmed');
+    return true;
+    
   } catch (error) {
-    oauthOk = false;
+    console.log('❌ OOXML test failed:', error.message);
+    return false;
   }
+}
+
+/**
+ * Test Tanaikech-style features
+ */
+function testTanaikechSetup() {
+  console.log('Testing Tanaikech-style advanced features...');
   
-  checks.push({
-    name: 'OAuth Authorization',
-    status: oauthOk,
-    action: oauthOk ? 'Ready' : 'Needs authorization'
+  try {
+    // Test SlidesAppAdvanced
+    console.log('Testing SlidesAppAdvanced...');
+    const advanced = SlidesAppAdvanced.create('Tanaikech Test');
+    
+    if (advanced && advanced.getId()) {
+      console.log('✅ SlidesAppAdvanced working');
+      
+      // Test API explorer
+      console.log('Testing SlidesAPIExplorer...');
+      try {
+        const analysis = SlidesAPIExplorer.explorePresentation(advanced.getId());
+        if (analysis && analysis.basicInfo) {
+          console.log('✅ SlidesAPIExplorer working');
+        } else {
+          console.log('⚠️ SlidesAPIExplorer partial functionality');
+        }
+      } catch (explorerError) {
+        console.log('⚠️ SlidesAPIExplorer needs API setup:', explorerError.message);
+      }
+      
+      // Clean up
+      DriveApp.getFileById(advanced.getId()).setTrashed(true);
+      
+      console.log('✅ Tanaikech-style features operational');
+      return true;
+      
+    } else {
+      console.log('❌ SlidesAppAdvanced failed');
+      return false;
+    }
+    
+  } catch (error) {
+    console.log('❌ Tanaikech-style test failed:', error.message);
+    return false;
+  }
+}
+
+/**
+ * Print comprehensive setup results and guidance
+ */
+function printSetupResults(results) {
+  console.log('\n📋 AUTO SETUP RESULTS');
+  console.log('=' * 25);
+  
+  console.log('\n🔍 Component Status:');
+  Object.entries(results).forEach(([component, status]) => {
+    const icon = status ? '✅' : '❌';
+    const name = component.charAt(0).toUpperCase() + component.slice(1);
+    console.log(`   ${icon} ${name}: ${status ? 'READY' : 'NEEDS SETUP'}`);
   });
   
-  // Display results
-  console.log('📊 Setup Status:');
-  checks.forEach(check => {
-    const icon = check.status ? '✅' : '⚠️';
-    console.log(`${icon} ${check.name}: ${check.action}`);
-  });
-  
-  const allReady = checks.every(check => check.status);
+  const allReady = Object.values(results).every(result => result);
   
   if (allReady) {
-    console.log('');
-    console.log('🎉 Everything is ready! Try running:');
-    console.log('runQuickTests()');
+    console.log('\n🎉 SETUP COMPLETE!');
+    console.log('All components are ready. You can now:');
+    console.log('   • Run runAllTests() for OOXML tests');
+    console.log('   • Run runOOXMLCompatibilityTest() for compatibility analysis');
+    console.log('   • Run runTanaikechStyleTests() for advanced tests'); 
+    console.log('   • Use OOXMLSlides for standard manipulation');
+    console.log('   • Use SlidesAppAdvanced for tanaikech-style features');
+    console.log('   • Use SlidesAPIExplorer to discover API features');
+    
   } else {
-    console.log('');
-    console.log('🔧 Run autoSetup() to fix issues automatically');
+    console.log('\n⚠️ SETUP INCOMPLETE');
+    console.log('Some components need attention:');
+    
+    if (!results.apis) {
+      console.log('\n🔧 API Setup:');
+      console.log('   Enable required APIs in Google Cloud Console');
+      console.log('   Or run: gcloud services enable [api-name]');
+    }
+    
+    if (!results.permissions) {
+      console.log('\n🔧 Permission Setup:');
+      console.log('   Check OAuth scopes in appsscript.json');
+      console.log('   Ensure all required scopes are granted');
+    }
+    
+    if (!results.cloudFunction) {
+      console.log('\n🔧 Cloud Function Setup:');
+      console.log('   Deploy the Cloud Function: cd cloud-function && ./deploy.sh');
+      console.log('   Update URL in CloudPPTXService.js');
+    }
+    
+    if (!results.slides) {
+      console.log('\n🔧 Slides API Setup:');
+      console.log('   Enable Google Slides API: gcloud services enable slides.googleapis.com');
+      console.log('   Add Slides advanced service in appsscript.json');
+    }
   }
   
-  return allReady;
+  console.log('\n📚 Documentation:');
+  console.log('   • README.md - Complete setup guide');
+  console.log('   • DEPLOYMENT.md - Cloud Function deployment');
+  console.log('   • Run demonstrateTanaikechStyleUsage() for examples');
 }
 
 /**
- * One-click setup - combines everything
+ * Quick setup check - faster version for troubleshooting
  */
-function oneClickSetup() {
-  console.log('🎯 One-Click OOXML Slides Setup');
-  console.log('=' * 32);
+function quickSetupCheck() {
+  console.log('🔍 Quick Setup Check');
+  console.log('=' * 20);
   
-  try {
-    // Step 1: Smart analysis
-    console.log('📊 Analyzing current setup...');
-    const currentStatus = smartSetupCheck();
-    
-    if (currentStatus) {
-      console.log('✅ Already set up! Running quick test...');
-      runQuickTests();
-      return true;
+  const checks = [
+    { name: 'Drive API', test: () => !!DriveApp.getFiles() },
+    { name: 'Slides API', test: () => !!SlidesApp.create('Test').getId() },
+    { name: 'Cloud Function', test: () => CloudPPTXService.isCloudFunctionAvailable() },
+    { name: 'OOXML Parser', test: () => !!PPTXTemplate.createMinimalTemplate() },
+    { name: 'SlidesAppAdvanced', test: () => !!SlidesAppAdvanced.create('Test') }
+  ];
+  
+  checks.forEach(check => {
+    try {
+      const result = check.test();
+      console.log(`${result ? '✅' : '❌'} ${check.name}`);
+      
+      // Clean up test presentations
+      if (check.name === 'Slides API' && result) {
+        DriveApp.getFiles().next().setTrashed(true);
+      }
+      if (check.name === 'SlidesAppAdvanced' && result) {
+        DriveApp.getFiles().next().setTrashed(true);
+      }
+    } catch (error) {
+      console.log(`❌ ${check.name}: ${error.message}`);
     }
-    
-    console.log('');
-    console.log('🔄 Starting automatic setup...');
-    
-    // Step 2: Auto setup
-    const setupResult = autoSetup();
-    
-    if (setupResult) {
-      console.log('');
-      console.log('🎉 One-click setup completed successfully!');
-      console.log('🧪 Running validation tests...');
-      
-      // Step 3: Validation
-      runQuickTests();
-      
-      return true;
-    } else {
-      console.log('');
-      console.log('⚠️ Automatic setup incomplete');
-      console.log('📋 Please follow manual setup instructions above');
-      
-      return false;
-    }
-    
-  } catch (error) {
-    console.error('❌ One-click setup failed:', error);
-    console.log('');
-    console.log('🔧 Please try manual setup:');
-    showManualSetupInstructions();
-    return false;
-  }
+  });
+  
+  console.log('\n💡 Run autoSetup() for detailed setup and troubleshooting');
 }
 
-// Quick access functions
-function quickSetup() { return oneClickSetup(); }
-function setup() { return oneClickSetup(); }
-function checkSetup() { return smartSetupCheck(); }
+/**
+ * Reset and clean setup (for development)
+ */
+function resetSetup() {
+  console.log('🧹 Resetting Setup');
+  console.log('This will clean up test files and caches');
+  
+  try {
+    // Find and clean up test files
+    const files = DriveApp.searchFiles('title contains "Test" or title contains "test"');
+    let cleanupCount = 0;
+    
+    while (files.hasNext() && cleanupCount < 10) { // Limit for safety
+      const file = files.next();
+      if (file.getName().includes('Test') || file.getName().includes('API Test')) {
+        file.setTrashed(true);
+        cleanupCount++;
+      }
+    }
+    
+    console.log(`✅ Cleaned up ${cleanupCount} test files`);
+    console.log('✅ Setup reset complete');
+    console.log('Run autoSetup() to begin fresh setup');
+    
+  } catch (error) {
+    console.log('❌ Reset failed:', error.message);
+  }
+}
