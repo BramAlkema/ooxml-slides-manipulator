@@ -259,7 +259,7 @@ function testSimpleTemplate() {
   try {
     // Use the minimal template approach instead of base64
     const templateBlob = PPTXTemplate.createMinimalTemplate();
-    console.log('📦 Created minimal template blob, size:', templateBlob.getSize());
+    console.log('📦 Created minimal template blob, size:', templateBlob.getBytes().length);
     
     // Try to parse it
     const parser = new OOXMLParser(templateBlob);

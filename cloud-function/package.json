@@ -1,0 +1,20 @@
+{
+  "name": "pptx-unzip-service",
+  "version": "1.0.0",
+  "description": "Google Cloud Function for PPTX ZIP manipulation",
+  "main": "index.js",
+  "scripts": {
+    "start": "functions-framework --target=pptxRouter",
+    "start-unzip": "functions-framework --target=pptxUnzip",
+    "start-zip": "functions-framework --target=pptxZip", 
+    "deploy": "gcloud functions deploy pptx-router --runtime nodejs18 --trigger http --entry-point pptxRouter --allow-unauthenticated",
+    "test": "node test-local.js"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.0.0",
+    "jszip": "^3.10.1"
+  },
+  "engines": {
+    "node": "18"
+  }
+}

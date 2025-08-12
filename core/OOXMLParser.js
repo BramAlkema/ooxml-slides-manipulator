@@ -22,27 +22,56 @@ class OOXMLParser {
 
   /**
    * Extract PPTX file (ZIP archive) into individual files
+   * Uses CloudPPTXService for reliable PPTX extraction
    */
   extract() {
     if (this.isExtracted) return this;
     
     try {
-      const zipBlob = Utilities.unzip(this.originalBlob);
+      // Use CloudPPTXService for extraction (handles PPTX files properly)
+      const extractedFiles = CloudPPTXService.unzipPPTX(this.originalBlob);
       
-      zipBlob.forEach(file => {
-        const fileName = file.getName();
-        const content = file.getDataAsString();
+      // Convert to internal format
+      Object.entries(extractedFiles).forEach(([fileName, content]) => {
         this.files.set(fileName, {
           content: content,
           isXML: fileName.endsWith('.xml') || fileName.endsWith('.rels'),
-          blob: file
+          blob: null // We have text content, can recreate blob if needed
         });
       });
       
       this.isExtracted = true;
+      console.log(`✅ Extracted ${this.files.size} files from PPTX`);
       return this;
+      
     } catch (error) {
-      throw new Error(`Failed to extract PPTX: ${error.message}`);
+      // Fallback to native Google Apps Script method if Cloud Function fails
+      console.log('Cloud extraction failed, trying native method:', error.message);
+      
+      try {
+        const zipBlob = Utilities.unzip(this.originalBlob);
+        
+        zipBlob.forEach(file => {
+          const fileName = file.getName();
+          const content = file.getDataAsString();
+          this.files.set(fileName, {
+            content: content,
+            isXML: fileName.endsWith('.xml') || fileName.endsWith('.rels'),
+            blob: file
+          });
+        });
+        
+        this.isExtracted = true;
+        console.log(`✅ Extracted ${this.files.size} files using native method`);
+        return this;
+        
+      } catch (nativeError) {
+        throw new Error(
+          `Failed to extract PPTX: Cloud Function error: ${error.message}. ` +
+          `Native method error: ${nativeError.message}. ` +
+          `Consider deploying the Cloud Function for better PPTX support.`
+        );
+      }
     }
   }
 
@@ -154,6 +183,7 @@ class OOXMLParser {
 
   /**
    * Create new PPTX blob from current files
+   * Uses CloudPPTXService for reliable PPTX creation
    * @returns {Blob}
    */
   build() {
@@ -162,8 +192,50 @@ class OOXMLParser {
     }
     
     try {
-      const blobs = Array.from(this.files.values()).map(file => file.blob);
-      return Utilities.zip(blobs);
+      // Prepare files for CloudPPTXService (content strings)
+      const fileContents = {};
+      
+      this.files.forEach((file, fileName) => {
+        if (file.content !== null) {
+          // We have string content
+          fileContents[fileName] = file.content;
+        } else if (file.blob) {
+          // Convert blob to string
+          fileContents[fileName] = file.blob.getDataAsString();
+        } else {
+          throw new Error(`No content available for file: ${fileName}`);
+        }
+      });
+      
+      // Use CloudPPTXService for reliable zipping
+      try {
+        console.log(`Building PPTX with ${Object.keys(fileContents).length} files via Cloud Function...`);
+        return CloudPPTXService.zipPPTX(fileContents);
+        
+      } catch (cloudError) {
+        console.log('Cloud build failed, trying native method:', cloudError.message);
+        
+        // Fallback to native method
+        const blobs = [];
+        this.files.forEach((file, fileName) => {
+          if (file.blob) {
+            blobs.push(file.blob);
+          } else {
+            // Create blob from content
+            const blob = Utilities.newBlob(
+              file.content,
+              file.isXML ? 'application/xml' : 'application/octet-stream',
+              fileName
+            );
+            blobs.push(blob);
+          }
+        });
+        
+        const result = Utilities.zip(blobs);
+        console.log(`✅ Built PPTX using native method: ${result.getBytes().length} bytes`);
+        return result;
+      }
+      
     } catch (error) {
       throw new Error(`Failed to build PPTX: ${error.message}`);
     }
