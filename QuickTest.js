@@ -1,7 +1,67 @@
 /**
  * Quick Test - Simple test file for Google Apps Script environment
  * Run these functions to verify the library is working properly
+ * 
+ * 🚀 QUICK START: Run oneClickSetup() first!
  */
+
+/**
+ * 🎯 ONE-CLICK SETUP - Run this first!
+ * Automatically handles API enablement and configuration
+ */
+function oneClickSetup() {
+  console.log('🎯 One-Click OOXML Slides Setup');
+  console.log('=' * 32);
+  
+  try {
+    // Check if already set up
+    console.log('🔍 Checking current status...');
+    
+    if (testDriveAPIAccess()) {
+      console.log('✅ Already configured! Running quick test...');
+      return runQuickTests();
+    }
+    
+    console.log('🔧 Setting up APIs automatically...');
+    
+    // Try smart API enablement
+    const apiResult = smartEnableAPIs();
+    
+    if (apiResult) {
+      console.log('🎉 Setup completed! Running validation tests...');
+      return runQuickTests();
+    } else {
+      console.log('⚠️ Manual setup may be required');
+      showQuickSetupHelp();
+      return false;
+    }
+    
+  } catch (error) {
+    console.error('❌ Setup failed:', error);
+    showQuickSetupHelp();
+    return false;
+  }
+}
+
+/**
+ * Show quick setup help
+ */
+function showQuickSetupHelp() {
+  console.log('');
+  console.log('🆘 QUICK SETUP HELP');
+  console.log('=' * 20);
+  console.log('');
+  console.log('If you see authorization prompts:');
+  console.log('✅ Click "Review permissions"');
+  console.log('✅ Sign in to your Google account');  
+  console.log('✅ Click "Allow" for all permissions');
+  console.log('✅ Run oneClickSetup() again');
+  console.log('');
+  console.log('Alternative quick methods:');
+  console.log('🔧 authorizeDirectly() - Force authorization');
+  console.log('🧠 smartEnableAPIs() - Advanced API enablement');
+  console.log('📋 showManualSetupInstructions() - Manual steps');
+}
 
 /**
  * Test 1: Library Loading Test
