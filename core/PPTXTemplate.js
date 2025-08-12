@@ -166,7 +166,7 @@ class PPTXTemplate {
 
   static _getPresentationXML() {
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
+<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
   <p:sldMasterIdLst>
     <p:sldMasterId id="2147483648" r:id="rId1"/>
   </p:sldMasterIdLst>
@@ -216,7 +216,7 @@ class PPTXTemplate {
 
   static _getSlideMasterXML() {
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sldMaster xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
+<p:sldMaster xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
   <p:cSld>
     <p:spTree>
       <p:nvGrpSpPr>
@@ -243,7 +243,7 @@ class PPTXTemplate {
 
   static _getSlideLayoutXML() {
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sldLayout xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" type="title" preserve="1">
+<p:sldLayout xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" type="title" preserve="1">
   <p:cSld name="Title Slide">
     <p:spTree>
       <p:nvGrpSpPr>
@@ -266,7 +266,7 @@ class PPTXTemplate {
 
   static _getSlideXML() {
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
+<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
   <p:cSld>
     <p:spTree>
       <p:nvGrpSpPr>
