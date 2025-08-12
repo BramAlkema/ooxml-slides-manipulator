@@ -58,58 +58,67 @@ class PPTXTemplate {
    * For testing when base64 template is not available
    */
   static createMinimalTemplate() {
-    const files = [];
-    
-    // [Content_Types].xml
-    files.push(Utilities.newBlob(
-      this._getContentTypesXML(),
-      'application/xml',
-      '[Content_Types].xml'
-    ));
-    
-    // _rels/.rels
-    files.push(Utilities.newBlob(
-      this._getMainRelsXML(),
-      'application/xml',
-      '_rels/.rels'
-    ));
-    
-    // ppt/presentation.xml
-    files.push(Utilities.newBlob(
-      this._getPresentationXML(),
-      'application/xml',
-      'ppt/presentation.xml'
-    ));
-    
-    // ppt/theme/theme1.xml
-    files.push(Utilities.newBlob(
-      this._getThemeXML(),
-      'application/xml',
-      'ppt/theme/theme1.xml'
-    ));
-    
-    // ppt/slideMasters/slideMaster1.xml
-    files.push(Utilities.newBlob(
-      this._getSlideMasterXML(),
-      'application/xml',
-      'ppt/slideMasters/slideMaster1.xml'
-    ));
-    
-    // ppt/slideLayouts/slideLayout1.xml
-    files.push(Utilities.newBlob(
-      this._getSlideLayoutXML(),
-      'application/xml',
-      'ppt/slideLayouts/slideLayout1.xml'
-    ));
-    
-    // ppt/slides/slide1.xml
-    files.push(Utilities.newBlob(
-      this._getSlideXML(),
-      'application/xml',
-      'ppt/slides/slide1.xml'
-    ));
-    
-    return Utilities.zip(files);
+    try {
+      const files = [];
+      
+      // [Content_Types].xml
+      files.push(Utilities.newBlob(
+        this._getContentTypesXML(),
+        'application/xml',
+        '[Content_Types].xml'
+      ));
+      
+      // _rels/.rels
+      files.push(Utilities.newBlob(
+        this._getMainRelsXML(),
+        'application/xml',
+        '_rels/.rels'
+      ));
+      
+      // ppt/presentation.xml
+      files.push(Utilities.newBlob(
+        this._getPresentationXML(),
+        'application/xml',
+        'ppt/presentation.xml'
+      ));
+      
+      // ppt/theme/theme1.xml
+      files.push(Utilities.newBlob(
+        this._getThemeXML(),
+        'application/xml',
+        'ppt/theme/theme1.xml'
+      ));
+      
+      // ppt/slideMasters/slideMaster1.xml
+      files.push(Utilities.newBlob(
+        this._getSlideMasterXML(),
+        'application/xml',
+        'ppt/slideMasters/slideMaster1.xml'
+      ));
+      
+      // ppt/slideLayouts/slideLayout1.xml
+      files.push(Utilities.newBlob(
+        this._getSlideLayoutXML(),
+        'application/xml',
+        'ppt/slideLayouts/slideLayout1.xml'
+      ));
+      
+      // ppt/slides/slide1.xml
+      files.push(Utilities.newBlob(
+        this._getSlideXML(),
+        'application/xml',
+        'ppt/slides/slide1.xml'
+      ));
+      
+      // Create the ZIP blob
+      const zipBlob = Utilities.zip(files);
+      
+      // Ensure it has the correct MIME type and name
+      return zipBlob.setName('template.pptx').setContentType('application/vnd.openxmlformats-presentationml.presentation');
+      
+    } catch (error) {
+      throw new Error(`Failed to create minimal template: ${error.message}`);
+    }
   }
 
   // Private helper methods for template modification

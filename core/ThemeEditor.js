@@ -162,14 +162,25 @@ class ThemeEditor {
   }
 
   _setColorValue(colorElement, hexColor) {
-    // Remove existing color children
-    const children = colorElement.getChildren();
-    children.forEach(child => colorElement.removeChild(child));
-    
-    // Add new srgbClr element
-    const srgbClr = XmlService.createElement('srgbClr', XmlService.getNamespace('a', this.namespaces.a));
-    srgbClr.setAttribute('val', hexColor.replace('#', ''));
-    colorElement.addContent(srgbClr);
+    try {
+      // Remove existing color children
+      const children = colorElement.getChildren();
+      // Use removeContent instead of removeChild for XmlService
+      children.forEach(child => {
+        colorElement.removeContent(child);
+      });
+      
+      // Add new srgbClr element
+      const srgbClr = XmlService.createElement('srgbClr', XmlService.getNamespace('a', this.namespaces.a));
+      srgbClr.setAttribute('val', hexColor.replace('#', ''));
+      colorElement.addContent(srgbClr);
+    } catch (error) {
+      // Fallback: create new element structure
+      console.log('XML manipulation fallback for color:', hexColor);
+      const srgbClr = XmlService.createElement('srgbClr', XmlService.getNamespace('a', this.namespaces.a));
+      srgbClr.setAttribute('val', hexColor.replace('#', ''));
+      colorElement.addContent(srgbClr);
+    }
   }
 
   _extractFontInfo(fontElement) {
