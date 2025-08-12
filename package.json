@@ -25,12 +25,23 @@
   },
   "homepage": "https://github.com/BramAlkema/ooxml-slides-manipulator#readme",
   "scripts": {
-    "test": "echo \"Run tests in Google Apps Script environment\" && exit 1"
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "clasp:push": "clasp push",
+    "clasp:pull": "clasp pull",
+    "clasp:deploy": "clasp deploy",
+    "install-playwright": "playwright install",
+    "gas:test": "echo \"Run tests in Google Apps Script environment - see GOOGLE_APPS_SCRIPT_SETUP.md\""
   },
   "engines": {
     "node": ">=16.0.0"
   },
   "devDependencies": {
-    "@google/clasp": "^2.4.2"
+    "@google/clasp": "^2.4.2",
+    "@playwright/test": "^1.40.0",
+    "dotenv": "^16.3.1"
   }
 }

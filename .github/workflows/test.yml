@@ -1,0 +1,269 @@
+name: OOXML Slides Library Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  playwright-tests:
+    name: Playwright Tests
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+      fail-fast: false
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        npm run install-playwright
+        
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps ${{ matrix.browser }}
+      
+    - name: Run Playwright tests
+      env:
+        GAS_PROJECT_URL: ${{ secrets.GAS_PROJECT_URL }}
+        TEST_PPTX_FILE_ID: ${{ secrets.TEST_PPTX_FILE_ID }}
+        GOOGLE_CLIENT_EMAIL: ${{ secrets.GOOGLE_CLIENT_EMAIL }}
+        GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
+      run: npx playwright test --project=${{ matrix.browser }}
+      
+    - name: Upload Playwright Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report-${{ matrix.browser }}
+        path: playwright-report/
+        retention-days: 30
+
+  clasp-validation:
+    name: Validate Clasp Configuration
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Validate clasp configuration
+      run: |
+        # Check if .clasp.json exists and is valid
+        if [ -f ".clasp.json" ]; then
+          echo "✅ .clasp.json found"
+          cat .clasp.json
+        else
+          echo "❌ .clasp.json not found"
+          exit 1
+        fi
+        
+        # Check if appsscript.json is valid
+        if [ -f "appsscript.json" ]; then
+          echo "✅ appsscript.json found"
+          cat appsscript.json | jq . # Validate JSON
+        else
+          echo "❌ appsscript.json not found"
+          exit 1
+        fi
+
+  library-structure-check:
+    name: Library Structure Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Validate library structure
+      run: |
+        echo "🔍 Checking library structure..."
+        
+        # Check main files
+        required_files=(
+          "OOXMLSlides.js"
+          "core/OOXMLParser.js"
+          "core/ThemeEditor.js"
+          "core/SlideManager.js"
+          "utils/FileHandler.js"
+          "utils/Validators.js"
+          "test/basic-test.js"
+          "examples/usage-examples.js"
+        )
+        
+        for file in "${required_files[@]}"; do
+          if [ -f "$file" ]; then
+            echo "✅ $file"
+          else
+            echo "❌ $file missing"
+            exit 1
+          fi
+        done
+        
+        echo "🎉 All required files present"
+        
+    - name: Check for JavaScript syntax errors
+      run: |
+        echo "🔍 Checking JavaScript syntax..."
+        
+        # Use Node.js to check syntax of main files
+        js_files=("OOXMLSlides.js" "core/*.js" "utils/*.js" "test/*.js" "examples/*.js")
+        
+        for pattern in "${js_files[@]}"; do
+          for file in $pattern; do
+            if [ -f "$file" ]; then
+              echo "Checking $file..."
+              node -c "$file" && echo "✅ $file syntax OK" || echo "❌ $file has syntax errors"
+            fi
+          done
+        done
+
+  documentation-check:
+    name: Documentation Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check documentation completeness
+      run: |
+        echo "📚 Checking documentation..."
+        
+        # Check required documentation files
+        docs=("README.md" "LICENSE" "GOOGLE_APPS_SCRIPT_SETUP.md")
+        
+        for doc in "${docs[@]}"; do
+          if [ -f "$doc" ]; then
+            echo "✅ $doc exists"
+            if [ -s "$doc" ]; then
+              echo "✅ $doc has content ($(wc -l < $doc) lines)"
+            else
+              echo "⚠️ $doc is empty"
+            fi
+          else
+            echo "❌ $doc missing"
+            exit 1
+          fi
+        done
+        
+        # Check if README has key sections
+        if grep -q "## Features" README.md && \
+           grep -q "## Installation" README.md && \
+           grep -q "## Usage" README.md; then
+          echo "✅ README has required sections"
+        else
+          echo "⚠️ README missing some required sections"
+        fi
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run security scan
+      run: |
+        echo "🔒 Running security scan..."
+        
+        # Check for potential security issues
+        echo "Checking for hardcoded secrets..."
+        
+        # Look for potential API keys or secrets (basic check)
+        if grep -r -i "api[_-]key\|secret\|password\|token" --include="*.js" . | grep -v "test\|example"; then
+          echo "⚠️ Potential secrets found - review carefully"
+        else
+          echo "✅ No obvious secrets detected"
+        fi
+        
+        # Check file permissions
+        echo "Checking file permissions..."
+        find . -name "*.js" -perm /111 && echo "⚠️ Executable JS files found" || echo "✅ No executable JS files"
+
+  publish-check:
+    name: Publish Readiness Check
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check if ready for publishing
+      run: |
+        echo "🚀 Checking publish readiness..."
+        
+        # Check package.json completeness
+        if [ -f "package.json" ]; then
+          echo "✅ package.json exists"
+          
+          # Check required fields
+          required_fields=("name" "version" "description" "main" "license" "repository")
+          
+          for field in "${required_fields[@]}"; do
+            if jq -e ".$field" package.json > /dev/null; then
+              echo "✅ package.json has $field"
+            else
+              echo "❌ package.json missing $field"
+              exit 1
+            fi
+          done
+        else
+          echo "❌ package.json not found"
+          exit 1
+        fi
+        
+        # Check version consistency
+        VERSION=$(jq -r '.version' package.json)
+        echo "📦 Current version: $VERSION"
+        
+        echo "🎉 Ready for publishing!"
+
+  report-results:
+    name: Test Results Summary
+    runs-on: ubuntu-latest
+    needs: [playwright-tests, clasp-validation, library-structure-check, documentation-check, security-scan]
+    if: always()
+    
+    steps:
+    - name: Generate test summary
+      run: |
+        echo "# OOXML Slides Library Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Test Status" >> $GITHUB_STEP_SUMMARY
+        echo "- Playwright Tests: ${{ needs.playwright-tests.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Clasp Validation: ${{ needs.clasp-validation.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Library Structure: ${{ needs.library-structure-check.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Documentation: ${{ needs.documentation-check.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Security Scan: ${{ needs.security-scan.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Repository Information" >> $GITHUB_STEP_SUMMARY
+        echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Trigger: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
