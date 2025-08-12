@@ -1,12 +1,23 @@
 /**
  * OOXMLParser - Core class for OOXML ZIP/XML manipulation
  * Handles the low-level unzipping, XML parsing, and rezipping of PPTX files
+ * Enhanced with tanaikech's template approach
  */
 class OOXMLParser {
   constructor(fileBlob) {
     this.originalBlob = fileBlob;
     this.files = new Map();
     this.isExtracted = false;
+  }
+
+  /**
+   * Create new parser from PPTX template
+   * @param {Object} options - Template options
+   * @returns {OOXMLParser} New parser instance
+   */
+  static fromTemplate(options = {}) {
+    const templateBlob = PPTXTemplate.createFromTemplate(options);
+    return new OOXMLParser(templateBlob);
   }
 
   /**
@@ -73,7 +84,8 @@ class OOXMLParser {
     }
     
     try {
-      const xmlString = XmlService.getPrettyFormat().format(xmlDoc);
+      // Use getRawFormat() like tanaikech - preserves OOXML structure better
+      const xmlString = XmlService.getRawFormat().format(xmlDoc);
       file.content = xmlString;
       file.blob = Utilities.newBlob(xmlString, 'application/xml', path);
     } catch (error) {

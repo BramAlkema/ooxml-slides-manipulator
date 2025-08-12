@@ -260,6 +260,21 @@ class OOXMLSlides {
     instance.isLoaded = true;
     return instance;
   }
+
+  /**
+   * Create new presentation from template (like tanaikech's approach)
+   * @param {Object} templateOptions - Template creation options
+   * @param {Object} instanceOptions - Instance options
+   * @returns {OOXMLSlides} New presentation instance
+   */
+  static fromTemplate(templateOptions = {}, instanceOptions = {}) {
+    const instance = new OOXMLSlides(null, instanceOptions);
+    instance.parser = OOXMLParser.fromTemplate(templateOptions);
+    instance.theme = new ThemeEditor(instance.parser);
+    instance.slides = new SlideManager(instance.parser);
+    instance.isLoaded = true;
+    return instance;
+  }
 }
 
 // Example usage and presets
