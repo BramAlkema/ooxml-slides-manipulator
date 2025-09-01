@@ -5,7 +5,7 @@ const { defineConfig, devices } = require('@playwright/test');
  * Playwright configuration for testing OOXML Slides in Google Slides and PowerPoint environments
  */
 module.exports = defineConfig({
-  testDir: './tests',
+  testDir: './test',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -68,12 +68,19 @@ module.exports = defineConfig({
       name: 'Google Chrome',
       use: { ...devices['Desktop Chrome'], channel: 'chrome' },
     },
+    {
+      name: 'Brave',
+      use: { 
+        ...devices['Desktop Chrome'], 
+        executablePath: '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'
+      },
+    },
   ],
 
   /* Global test timeout */
   timeout: 120000,
   
-  /* Global setup and teardown */
-  globalSetup: require.resolve('./tests/global-setup.js'),
-  globalTeardown: require.resolve('./tests/global-teardown.js'),
+  /* Global setup and teardown - temporarily disabled for testing */
+  // globalSetup: require.resolve('./test/global-setup.js'),
+  // globalTeardown: require.resolve('./test/global-teardown.js'),
 });

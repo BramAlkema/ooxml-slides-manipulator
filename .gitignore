@@ -48,4 +48,4 @@ test-files/
 
 # Backup files
 *.backup
-*.bak
+*.bakoauth-key.json

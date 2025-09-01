@@ -30,21 +30,29 @@ echo "📋 Current directory: $(pwd)"
 echo "🔧 Enabling required APIs..."
 gcloud services enable cloudfunctions.googleapis.com
 gcloud services enable cloudbuild.googleapis.com
+gcloud services enable run.googleapis.com
 
 # Deploy the function
 echo "📦 Deploying Cloud Function..."
 gcloud functions deploy pptx-router \
-    --runtime nodejs18 \
-    --trigger http \
+    --gen2 \
+    --runtime nodejs20 \
+    --trigger-http \
     --entry-point pptxRouter \
-    --allow-unauthenticated \
     --memory 512MB \
     --timeout 120s \
     --region us-central1
 
+# Set IAM policy to allow unauthenticated access
+echo "🔐 Setting IAM policy for unauthenticated access..."
+gcloud functions add-iam-policy-binding pptx-router \
+    --region=us-central1 \
+    --member="allUsers" \
+    --role="roles/cloudfunctions.invoker"
+
 # Get the deployed URL
 echo "🔗 Getting deployed function URL..."
-FUNCTION_URL=$(gcloud functions describe pptx-router --region=us-central1 --format="value(httpsTrigger.url)")
+FUNCTION_URL=$(gcloud functions describe pptx-router --region=us-central1 --gen2 --format="value(serviceConfig.uri)")
 
 echo ""
 echo "✅ Deployment Complete!"

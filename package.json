@@ -1,8 +1,8 @@
 {
-  "name": "ooxml-slides-manipulator",
-  "version": "1.0.0",
-  "description": "Advanced PowerPoint/Google Slides manipulation through direct OOXML editing in Google Apps Script",
-  "main": "OOXMLSlides.js",
+  "name": "ooxml-pptx-processor",
+  "version": "2.0.0",
+  "description": "Cloud-based PPTX processing platform - unzip, modify, and zip PowerPoint files from Google Apps Script",
+  "main": "src/Main.js",
   "keywords": [
     "powerpoint",
     "google-slides",
@@ -25,16 +25,20 @@
   },
   "homepage": "https://github.com/BramAlkema/ooxml-slides-manipulator#readme",
   "scripts": {
-    "test": "playwright test",
-    "test:ui": "playwright test --ui",
-    "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug",
-    "test:report": "playwright show-report",
+    "test": "playwright test --project=Brave",
+    "test:mvp": "node test-pptx-mvp.js",
+    "test:cloud": "node test-cloud-pptx-mvp.js",
+    "test:deployment": "node test-free-tier-deployment.js",
+    "test:integration": "playwright test test/gas-cloud-integration.spec.js --project=Brave",
+    "test:brave": "playwright test test/brave-pptx-integration.spec.js --project=Brave",
+    "deploy:check": "node test-free-tier-deployment.js",
+    "deploy:cli": "./deploy-simple-us.sh",
+    "clasp:login": "clasp login",
     "clasp:push": "clasp push",
     "clasp:pull": "clasp pull",
+    "clasp:open": "clasp open",
     "clasp:deploy": "clasp deploy",
-    "install-playwright": "playwright install",
-    "gas:test": "echo \"Run tests in Google Apps Script environment - see GOOGLE_APPS_SCRIPT_SETUP.md\""
+    "install": "npm install && npx playwright install"
   },
   "engines": {
     "node": ">=16.0.0"
@@ -44,5 +48,9 @@
     "@playwright/test": "^1.54.2",
     "dotenv": "^16.6.1"
   },
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "fflate": "^0.8.2",
+    "jszip": "^3.10.1"
+  }
 }
