@@ -63,6 +63,9 @@ function doPost(e) {
       case 'createFontComparison':
         result = createFontComparisonSync.apply(null, args);
         break;
+      case 'createBrandwarePowerPoint':
+        result = createBrandwarePowerPoint.apply(null, args);
+        break;
       default:
         return createResponse({ error: `Unknown function: ${fn}` });
     }

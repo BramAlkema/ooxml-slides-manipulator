@@ -22,6 +22,9 @@ test/playwright-*.js
 test/webapi-*.js
 test/performance-*.js
 test/slides-*.js
+test-*-mvp.js
+test-cloud-*.js
+test-free-*.js
 playwright-report/**
 venv/**
 *.py

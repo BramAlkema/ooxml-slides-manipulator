@@ -48,4 +48,60 @@ test-files/
 
 # Backup files
 *.backup
-*.bakoauth-key.json
+*.bak
+
+# Sensitive files
+oauth-key.json
+
+# Test outputs and temporary files
+test-outputs/
+*.pptx
+*-test-*.pptx
+*-output-*.pptx
+*-enhanced-*.pptx
+*-integration-test-*.pptx
+*.png
+screenshots/
+
+# Playwright test results
+test-results/
+playwright-report/
+.playwright-artifacts*/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Development tools
+.agent-os/
+.claude/
+temp/
+scripts/debug_*.py
+scripts/test_*.py
+
+# Office temporary files
+~$*.pptx
+~$*.xlsx
+~$*.docx
+
+# Cloud Function artifacts
+cloud-function/node_modules/
