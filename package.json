@@ -44,7 +44,7 @@
     "node": ">=16.0.0"
   },
   "devDependencies": {
-    "@google/clasp": "^2.4.2",
+    "@google/clasp": "^3.0.0",
     "@playwright/test": "^1.54.2",
     "dotenv": "^16.6.1"
   },
