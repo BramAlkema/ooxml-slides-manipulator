@@ -41,7 +41,7 @@
     "setup": "npm install && npx playwright install"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   },
   "devDependencies": {
     "@google/clasp": "^3.0.0",
