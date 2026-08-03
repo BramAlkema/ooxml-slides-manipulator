@@ -38,7 +38,7 @@
     "clasp:pull": "clasp pull",
     "clasp:open": "clasp open",
     "clasp:deploy": "clasp deploy",
-    "install": "npm install && npx playwright install"
+    "setup": "npm install && npx playwright install"
   },
   "engines": {
     "node": ">=16.0.0"
