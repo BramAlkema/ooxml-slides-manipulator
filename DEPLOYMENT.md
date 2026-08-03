@@ -29,7 +29,7 @@ All processing happens on Google Cloud Run (US free tier) and is controlled from
 - Google Workspace account
 
 ### Optional (for local development)
-- Node.js 18+ 
+- Node.js 20+
 - Google Cloud CLI (`gcloud`)
 - Playwright (for testing)
 
