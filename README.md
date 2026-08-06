@@ -13,7 +13,7 @@ A powerful Google Apps Script platform for manipulating PowerPoint presentations
 - **📋 JSON Manifest System**: Work with OOXML as editable JSON structures
 - **🎨 Theme Management**: Apply brand colors, fonts, and compliance rules
 - **💰 Free Tier Optimized**: Runs on Google Cloud free tier (us-central1)
-- **🧪 Comprehensive Testing**: Playwright tests with Brave browser integration
+- **🧪 Layered Testing**: deterministic local OOXML tests in CI plus opt-in Playwright deployment checks
 
 ## 🏗️ **Project Structure**
 
@@ -182,6 +182,25 @@ const result = await slides.useExtension('MyBrand', options);
 ## 🧪 **Testing**
 
 The project includes comprehensive testing at multiple levels:
+
+### Local CI Tests
+
+```bash
+npm test
+```
+
+This exercises PPTX compression and extraction entirely in-process, including
+text and binary OOXML parts. It does not depend on a deployed Apps Script URL,
+Google authentication, or the permissions of a historical test presentation.
+
+### Live Apps Script Tests
+
+```bash
+GAS_PROJECT_URL="https://script.google.com/macros/s/.../exec" npm run test:live
+```
+
+Live deployment checks are explicit because they create presentations and rely
+on the current deployment and its Google account permissions.
 
 ### Deployment Health Check
 ```javascript

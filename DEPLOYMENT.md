@@ -148,17 +148,14 @@ gcloud run deploy pptx-processor \
 ### Local Testing (Optional)
 
 ```bash
-# Install dependencies
-npm install
+# Install the locked dependencies
+npm ci
 
-# Test PPTX processing locally
-node test-pptx-mvp.js
+# Test PPTX processing locally without external services
+npm test
 
-# Test cloud service simulation  
-node test-cloud-pptx-mvp.js
-
-# Test with Brave browser
-npx playwright test --project=Brave
+# Test the current live Apps Script deployment
+GAS_PROJECT_URL="https://script.google.com/macros/s/.../exec" npm run test:live
 ```
 
 ### GAS Testing

@@ -11,11 +11,12 @@ const { test, expect } = require('@playwright/test');
 
 // Configuration for MVP tests
 const config = {
-  webAppUrl: 'https://script.google.com/macros/s/AKfycbyCg7jE4S95QcrHzVhfC8YhF3F4JtJcHWG-mhhvpZjWdmhM5rLM2bPjlJLNV7JxnmjA/exec',
+  webAppUrl: process.env.GAS_PROJECT_URL,
   timeout: 30000
 };
 
 test.describe('MVP Validation: OOXML API Extension Platform', () => {
+  test.skip(!config.webAppUrl, 'Set GAS_PROJECT_URL to run live deployment tests.');
   
   test.beforeEach(async ({ page }) => {
     test.setTimeout(60000); // Extended timeout for API calls
@@ -304,6 +305,7 @@ test.describe('MVP Validation: OOXML API Extension Platform', () => {
  * MVP Summary Test - Final validation report
  */
 test.describe('MVP Summary Report', () => {
+  test.skip(!config.webAppUrl, 'Set GAS_PROJECT_URL to run live deployment tests.');
   
   test('Generate comprehensive MVP validation report', async ({ page }) => {
     console.log('📊 Generating MVP validation summary report...');

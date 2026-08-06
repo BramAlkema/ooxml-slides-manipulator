@@ -11,8 +11,8 @@ on:
 
 jobs:
   playwright-tests:
-    name: Playwright Tests (Brave Browser)
-    timeout-minutes: 60
+    name: Local PPTX Processing Tests
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     
     steps:
@@ -26,34 +26,10 @@ jobs:
         cache: 'npm'
         
     - name: Install dependencies
-      run: |
-        npm ci
-        npx playwright install
-        
-    - name: Install Brave Browser
-      run: npx playwright install chromium  # Brave runs on Chromium
-      
+      run: npm ci
+
     - name: Test local PPTX processing
-      run: |
-        # Test core functionality locally first
-        npm run test:mvp || echo "MVP test skipped - no test file"
-        npm run test:cloud || echo "Cloud test skipped"
-        
-    - name: Run Playwright tests with Brave
-      env:
-        GAS_PROJECT_URL: ${{ secrets.GAS_PROJECT_URL }}
-        TEST_PPTX_FILE_ID: ${{ secrets.TEST_PPTX_FILE_ID }}
-        GOOGLE_CLIENT_EMAIL: ${{ secrets.GOOGLE_CLIENT_EMAIL }}
-        GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
-      run: npx playwright test --project=Brave
-      
-    - name: Upload Playwright Report
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: playwright-report-brave
-        path: playwright-report/
-        retention-days: 30
+      run: npm test
 
   clasp-validation:
     name: Validate Clasp Configuration
@@ -281,7 +257,7 @@ jobs:
         echo "# PPTX Processor Test Results" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "## Test Status" >> $GITHUB_STEP_SUMMARY
-        echo "- Playwright Tests (Brave): ${{ needs.playwright-tests.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Local PPTX processing tests: ${{ needs.playwright-tests.result }}" >> $GITHUB_STEP_SUMMARY
         echo "- Clasp Validation: ${{ needs.clasp-validation.result }}" >> $GITHUB_STEP_SUMMARY
         echo "- PPTX Processor Structure: ${{ needs.library-structure-check.result }}" >> $GITHUB_STEP_SUMMARY
         echo "- Documentation: ${{ needs.documentation-check.result }}" >> $GITHUB_STEP_SUMMARY
@@ -294,5 +270,5 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "## Architecture Notes" >> $GITHUB_STEP_SUMMARY
         echo "- Platform: Google Apps Script + Cloud Run" >> $GITHUB_STEP_SUMMARY
-        echo "- Browser: Brave (Chromium-based)" >> $GITHUB_STEP_SUMMARY
+        echo "- Live browser: Chromium (manual workflow)" >> $GITHUB_STEP_SUMMARY
         echo "- Deployment: US Free Tier (us-central1)" >> $GITHUB_STEP_SUMMARY
